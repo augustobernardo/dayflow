@@ -27,9 +27,15 @@
                 "glob": "**/*",
                 "input": "src/assets/images",
                 "output": "assets/images"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets/i18n",
+                "output": "assets/i18n"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": ["src/styles.css"],
+            "polyfills": ["@angular/localize/init"]
           },
           "configurations": {
             "production": {
