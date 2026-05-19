@@ -1,9 +1,33 @@
-import { Component } from '@angular/core';
-import { LandingModule } from '../../components/landing/landing.module';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import {
+  NavbarLandingComponent,
+  HeroLandingComponent,
+  FeaturesLandingComponent,
+  BenefitsLandingComponent,
+  CtaLandingComponent,
+  FooterLandingComponent,
+} from '../../components/landing';
 
 @Component({
-  selector: 'app-landing',
-  imports: [LandingModule],
-  templateUrl: './landing.html',
+  selector: 'page-landing',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    NavbarLandingComponent,
+    HeroLandingComponent,
+    FeaturesLandingComponent,
+    BenefitsLandingComponent,
+    CtaLandingComponent,
+    FooterLandingComponent,
+  ],
+  template: `
+    <landing-navbar />
+    <main>
+      <landing-hero />
+      <landing-features />
+      <landing-benefits />
+      <landing-cta />
+    </main>
+    <landing-footer />
+  `,
 })
-export class LandingComponent {}
+export class LandingPage {}
