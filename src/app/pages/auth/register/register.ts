@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InputComponent } from '../../../shared/components/input/input';
@@ -6,6 +6,9 @@ import { PasswordInputComponent } from '../../../shared/components/password-inpu
 import { CheckboxComponent } from '../../../shared/components/checkbox/checkbox';
 import { ButtonComponent } from '../../../shared/components/button/button';
 import { SocialButtonComponent } from '../../../shared/components/social-button/social-button';
+import { AuthService } from '../../../services/auth.service';
+
+type PasswordStrength = 'weak' | 'fair' | 'good' | 'strong' | '';
 
 @Component({
   selector: 'page-register',
@@ -23,10 +26,15 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
     <div class="auth-card">
       <div class="auth-header">
         <h1 class="auth-title" i18n="@@auth.register.title">Create your account</h1>
-        <p class="auth-description" i18n="@@auth.register.description">Start your free 14-day trial. No credit card required.</p>
       </div>
 
       <form class="auth-form" (submit)="onSubmit($event)" novalidate>
+        @if (apiError()) {
+          <div class="form-error" role="alert">
+            {{ apiError() }}
+          </div>
+        }
+
         <app-input
           [label]="nameLabel"
           type="text"
@@ -36,6 +44,8 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
           [(ngModel)]="name"
           name="name"
           [required]="true"
+          [error]="nameError()"
+          (focusout)="onFieldFocusout('name')"
         />
 
         <app-input
@@ -47,6 +57,8 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
           [(ngModel)]="email"
           name="email"
           [required]="true"
+          [error]="emailError()"
+          (focusout)="onFieldFocusout('email')"
         />
 
         <app-password-input
@@ -57,7 +69,23 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
           [(ngModel)]="password"
           name="password"
           [required]="true"
+          [error]="passwordError()"
+          (focusout)="onFieldFocusout('password')"
         />
+
+        @if (password()) {
+          <div class="password-strength" role="status" [attr.aria-label]="strengthAriaLabel()">
+            <div class="strength-bar">
+              <span class="strength-segment" [class.active]="strengthLevel() >= 1" [attr.data-level]="strengthLevel()"></span>
+              <span class="strength-segment" [class.active]="strengthLevel() >= 2" [attr.data-level]="strengthLevel()"></span>
+              <span class="strength-segment" [class.active]="strengthLevel() >= 3" [attr.data-level]="strengthLevel()"></span>
+              <span class="strength-segment" [class.active]="strengthLevel() >= 4" [attr.data-level]="strengthLevel()"></span>
+            </div>
+            <span class="strength-label" [attr.data-strength]="strengthLabel()">
+              {{ strengthLabel() }}
+            </span>
+          </div>
+        }
 
         <app-password-input
           [label]="confirmPasswordLabel"
@@ -67,8 +95,9 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
           [(ngModel)]="confirmPassword"
           name="confirmPassword"
           [required]="true"
+          [error]="confirmPasswordError()"
+          (focusout)="onFieldFocusout('confirmPassword')"
         />
-        <!-- TODO: Implement register form validation here -->
 
         <div class="auth-terms">
           <app-checkbox [(ngModel)]="acceptedTerms" name="acceptedTerms" [required]="true">
@@ -79,12 +108,14 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
               <a href="#" class="auth-link" i18n="@@auth.register.privacyPolicy">Privacy Policy</a>
             </span>
           </app-checkbox>
+          @if (termsTouched() && termsError()) {
+            <p class="terms-error" role="alert">{{ termsError() }}</p>
+          }
         </div>
 
-        <app-button type="submit" size="lg" fullWidth [loading]="submitting()">
+        <app-button type="submit" size="lg" fullWidth [loading]="submitting()" (click)="onSubmit($event)" [disabled]="submitting() || !isValid()">
           <ng-container i18n="@@auth.register.submit">Create Account</ng-container>
         </app-button>
-        <!-- TODO: Integrate authentication API here -->
       </form>
 
       <div class="auth-divider">
@@ -122,15 +153,31 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
     .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: rgb(128 128 128 / 0.25); }
     .auth-divider span { font-size: 0.6875rem; color: var(--color-text-tertiary); font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
     .auth-form { display: flex; flex-direction: column; gap: 1.125rem; margin-bottom: 1.25rem; }
+    .form-error { font-size: 0.8125rem; color: var(--color-error-500); background: rgb(239 68 68 / 0.08); border: 1px solid rgb(239 68 68 / 0.2); border-radius: var(--radius-md); padding: 0.75rem 1rem; text-align: center; line-height: 1.4; }
     .auth-terms { margin: 0; }
     .terms-text { font-size: 0.8125rem; color: var(--color-text-tertiary); line-height: 1.4; }
+    .terms-error { font-size: 0.75rem; color: var(--color-error-500); margin: 0.375rem 0 0 0; }
     .auth-link { font-size: 0.8125rem; color: var(--color-primary-500); text-decoration: none; font-weight: 500; transition: color 0.15s ease; }
     .auth-link:hover { color: var(--color-primary-400); }
     .auth-footer-text { text-align: center; font-size: 0.8125rem; color: var(--color-text-tertiary); margin: 1.5rem 0 0; }
+
+    .password-strength { display: flex; flex-direction: column; gap: 0.375rem; }
+    .strength-bar { display: flex; gap: 0.25rem; }
+    .strength-segment { flex: 1; height: 0.25rem; border-radius: 1rem; background: var(--color-border); transition: background-color 0.2s ease; }
+    .strength-segment.active[data-level="1"] { background: var(--color-error-500); }
+    .strength-segment.active[data-level="2"] { background: #f59e0b; }
+    .strength-segment.active[data-level="3"] { background: var(--color-primary-500); }
+    .strength-segment.active[data-level="4"] { background: #059669; }
+    .strength-label { font-size: 0.75rem; font-weight: 500; transition: color 0.2s ease; }
+    .strength-label[data-strength="Weak"] { color: var(--color-error-500); }
+    .strength-label[data-strength="Fair"] { color: #f59e0b; }
+    .strength-label[data-strength="Good"] { color: var(--color-primary-500); }
+    .strength-label[data-strength="Strong"] { color: #059669; }
   `,
 })
 export class RegisterPage {
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   protected name = signal('');
   protected email = signal('');
@@ -138,6 +185,13 @@ export class RegisterPage {
   protected confirmPassword = signal('');
   protected acceptedTerms = signal(false);
   protected submitting = signal(false);
+  protected apiError = signal('');
+
+  protected nameTouched = signal(false);
+  protected emailTouched = signal(false);
+  protected passwordTouched = signal(false);
+  protected confirmPasswordTouched = signal(false);
+  protected termsTouched = signal(false);
 
   protected readonly nameLabel = $localize`:@@auth.register.nameLabel:Full name`;
   protected readonly namePlaceholder = $localize`:@@auth.register.namePlaceholder:John Doe`;
@@ -148,19 +202,137 @@ export class RegisterPage {
   protected readonly confirmPasswordLabel = $localize`:@@auth.register.confirmPasswordLabel:Confirm password`;
   protected readonly confirmPasswordPlaceholder = $localize`:@@auth.register.confirmPasswordPlaceholder:Re-enter your password`;
 
-  // TODO: Implement register form validation here
-  onSubmit(event: Event): void {
+  protected nameError = computed(() => {
+    if (!this.nameTouched()) return '';
+    const value = this.name().trim();
+    if (!value) return $localize`:@@auth.register.validation.nameRequired:Name is required.`;
+    if (value.length < 2) return $localize`:@@auth.register.validation.nameMinLength:Name must be at least 2 characters.`;
+    if (value.length > 100) return $localize`:@@auth.register.validation.nameMaxLength:Name must be at most 100 characters.`;
+    if (/[0-9]/.test(value)) return $localize`:@@auth.register.validation.nameNoNumbers:Name should not contain numbers.`;
+    return '';
+  });
+
+  protected emailError = computed(() => {
+    if (!this.emailTouched()) return '';
+    const value = this.email().trim();
+    if (!value) return $localize`:@@auth.register.validation.emailRequired:Email is required.`;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return $localize`:@@auth.register.validation.emailInvalid:Please enter a valid email address.`;
+    return '';
+  });
+
+  protected passwordError = computed(() => {
+    if (!this.passwordTouched()) return '';
+    const pwd = this.password();
+    if (!pwd) return $localize`:@@auth.register.validation.passwordRequired:Password is required.`;
+    if (pwd.length < 6) return $localize`:@@auth.register.validation.passwordMinLength:Password must be at least 6 characters.`;
+    return '';
+  });
+
+  protected confirmPasswordError = computed(() => {
+    if (!this.confirmPasswordTouched()) return '';
+    const value = this.confirmPassword();
+    if (!value) return $localize`:@@auth.register.validation.confirmPasswordRequired:Please confirm your password.`;
+    if (value !== this.password()) return $localize`:@@auth.register.validation.passwordsMismatch:Passwords do not match.`;
+    return '';
+  });
+
+  protected termsError = computed(() => {
+    if (!this.termsTouched()) return '';
+    if (!this.acceptedTerms()) return $localize`:@@auth.register.validation.termsRequired:You must accept the terms to continue.`;
+    return '';
+  });
+
+  protected isValid = computed(() =>
+    !this.nameError() &&
+    !this.emailError() &&
+    !this.passwordError() &&
+    !this.confirmPasswordError() &&
+    !this.termsError() &&
+    this.acceptedTerms(),
+  );
+
+  protected passwordStrength = computed<PasswordStrength>(() => {
+    const pwd = this.password();
+    if (!pwd) return '';
+
+    const checks = [
+      pwd.length >= 6,
+      /[a-z]/.test(pwd),
+      /[A-Z]/.test(pwd),
+      /\d/.test(pwd),
+      /[^a-zA-Z0-9]/.test(pwd),
+    ];
+    const passed = checks.filter(Boolean).length;
+
+    if (pwd.length < 6) return 'weak';
+    if (passed <= 2) return 'weak';
+    if (passed === 3) return 'fair';
+    if (passed === 4) return 'good';
+    return 'strong';
+  });
+
+  protected strengthLevel = computed(() => {
+    const map: Record<PasswordStrength, number> = { '': 0, weak: 1, fair: 2, good: 3, strong: 4 };
+    return map[this.passwordStrength()] ?? 0;
+  });
+
+  protected strengthLabel = computed(() => {
+    const map: Record<PasswordStrength, string> = {
+      '': '',
+      weak: $localize`:@@auth.register.strength.weak:Weak`,
+      fair: $localize`:@@auth.register.strength.fair:Fair`,
+      good: $localize`:@@auth.register.strength.good:Good`,
+      strong: $localize`:@@auth.register.strength.strong:Strong`,
+    };
+    return map[this.passwordStrength()] ?? '';
+  });
+
+  protected strengthAriaLabel = computed(() => {
+    const label = this.strengthLabel();
+    return label ? $localize`:@@auth.register.strength.ariaLabel:Password strength: ${label}` : '';
+  });
+
+  protected onFieldFocusout(field: string): void {
+    this.apiError.set('');
+    switch (field) {
+      case 'name': this.nameTouched.set(true); break;
+      case 'email': this.emailTouched.set(true); break;
+      case 'password': this.passwordTouched.set(true); break;
+      case 'confirmPassword': this.confirmPasswordTouched.set(true); break;
+    }
+  }
+
+  protected onSubmit(event: Event): void {
     event.preventDefault();
+    this.apiError.set('');
+    this.nameTouched.set(true);
+    this.emailTouched.set(true);
+    this.passwordTouched.set(true);
+    this.confirmPasswordTouched.set(true);
+    this.termsTouched.set(true);
+
+    if (!this.isValid()) return;
+
     this.submitting.set(true);
-    // TODO: Integrate authentication API here
-    setTimeout(() => {
-      this.submitting.set(false);
-      console.log('Register submit:', { name: this.name(), email: this.email(), acceptedTerms: this.acceptedTerms() });
-    }, 1500);
+
+    this.authService
+      .register({
+        name: this.name().trim(),
+        email: this.email().trim().toLowerCase(),
+        password: this.password(),
+      })
+      .subscribe({
+        next: () => {
+          queueMicrotask(() => this.router.navigate(['/']));
+        },
+        error: (err: { message?: string }) => {
+          this.apiError.set($localize`:@@auth.register.genericError:Registration failed. Please try again.`);
+          this.submitting.set(false);
+        },
+      });
   }
 
   onSocialRegister(provider: string): void {
-    // TODO: Integrate social login (OAuth) here
     console.log('Social register with:', provider);
   }
 }
