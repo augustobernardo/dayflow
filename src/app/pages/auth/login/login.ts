@@ -6,6 +6,7 @@ import { PasswordInputComponent } from '../../../shared/components/password-inpu
 import { CheckboxComponent } from '../../../shared/components/checkbox/checkbox';
 import { ButtonComponent } from '../../../shared/components/button/button';
 import { SocialButtonComponent } from '../../../shared/components/social-button/social-button';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'page-login',
@@ -60,7 +61,7 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
           </a>
         </div>
 
-        <app-button type="submit" size="lg" fullWidth [loading]="submitting()">
+        <app-button type="submit" size="lg" fullWidth [loading]="submitting()" (click)="onSubmit($event)">
           <ng-container i18n="@@auth.login.submit">Sign In</ng-container>
         </app-button>
         <!-- TODO: Integrate authentication API here -->
@@ -109,6 +110,7 @@ import { SocialButtonComponent } from '../../../shared/components/social-button/
 })
 export class LoginPage {
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   protected email = signal('');
   protected password = signal('');
@@ -126,10 +128,25 @@ export class LoginPage {
     event.preventDefault();
     this.submitting.set(true);
     // TODO: Integrate authentication API here
-    setTimeout(() => {
-      this.submitting.set(false);
-      console.log('Login submit:', { email: this.email(), rememberMe: this.rememberMe() });
-    }, 1500);
+    // setTimeout(() => {
+    //   this.submitting.set(false);
+    //   console.log('Login submit:', { email: this.email(), rememberMe: this.rememberMe() });
+    // }, 1500);
+
+    this.submitting.set(true);
+
+    this.authService.login({
+      email: this.email().trim().toLowerCase(),
+      password: this.password(),
+    })
+    .subscribe({
+      next: () => {
+        queueMicrotask(() => this.router.navigate(['/dashboard']));
+      },
+      error: (err: { message?: string }) => {
+        this.submitting.set(false);
+      }
+    });
   }
 
   onSocialLogin(provider: string): void {
