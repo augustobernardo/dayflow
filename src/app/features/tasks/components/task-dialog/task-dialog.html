@@ -1,0 +1,26 @@
+<div class="dialog-panel" (click)="$event.stopPropagation()">
+  <div class="dialog-header">
+    <h2 class="dialog-title">{{ dialogTitle() }}</h2>
+    <button class="dialog-close" (click)="close()" [attr.aria-label]="'Close dialog'">
+      <svg lucideX [size]="18"></svg>
+    </button>
+  </div>
+
+  <div class="dialog-body">
+    <app-task-form
+      [title]="title()"
+      [description]="description()"
+      [priority]="priority()"
+      [status]="status()"
+      [dueDate]="dueDate()"
+      [saveLabel]="saveLabel"
+      (titleChange)="title.set($event)"
+      (descriptionChange)="description.set($event)"
+      (priorityChange)="priority.set($event)"
+      (statusChange)="status.set($event)"
+      (dueDateChange)="dueDate.set($event)"
+      (save)="onSave()"
+      (cancel)="close()"
+    />
+  </div>
+</div>
