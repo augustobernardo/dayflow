@@ -7,6 +7,18 @@ export const routes: Routes = [
       import('./pages/landing/landing').then((m) => m.LandingPage),
   },
   {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./layout/dashboard-layout/dashboard-layout').then((m) => m.DashboardLayout),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/dashboard/dashboard').then((m) => m.DashboardPage),
+      },
+    ],
+  },
+  {
     path: 'auth',
     loadComponent: () =>
       import('./layout/auth-layout/auth-layout').then((m) => m.AuthLayout),

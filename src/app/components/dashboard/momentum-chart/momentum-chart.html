@@ -1,0 +1,34 @@
+<div class="momentum-header">
+  <h3 class="momentum-title">{{ title() }}</h3>
+  <p class="momentum-description">{{ description() }}</p>
+</div>
+
+<div class="chart-container" role="img" [attr.aria-label]="title() + ' chart'">
+  <div class="chart-bars">
+    @for (day of data(); track day.day) {
+      <div class="chart-column">
+        <div
+          class="chart-bar"
+          [class.active]="day.isToday"
+          [style.--bar-height]="day.value + '%'"
+        >
+          <span class="bar-value">{{ day.value }}%</span>
+        </div>
+        <span class="bar-label" [class.active-label]="day.isToday">{{ day.dayShort }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="chart-guides" aria-hidden="true">
+    <div class="guide-line" style="bottom: 25%"></div>
+    <div class="guide-line" style="bottom: 50%"></div>
+    <div class="guide-line" style="bottom: 75%"></div>
+  </div>
+</div>
+
+<div class="legend">
+  <span class="legend-item">
+    <span class="legend-dot active"></span>
+    <span i18n="@@dashboard.momentum.today">Today</span>
+  </span>
+</div>
