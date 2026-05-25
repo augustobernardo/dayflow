@@ -127,13 +127,6 @@ export class LoginPage {
   onSubmit(event: Event): void {
     event.preventDefault();
     this.submitting.set(true);
-    // TODO: Integrate authentication API here
-    // setTimeout(() => {
-    //   this.submitting.set(false);
-    //   console.log('Login submit:', { email: this.email(), rememberMe: this.rememberMe() });
-    // }, 1500);
-
-    this.submitting.set(true);
 
     this.authService.login({
       email: this.email().trim().toLowerCase(),
