@@ -1,4 +1,5 @@
 export interface DashboardUser {
+  firstName: string;
   name: string;
   email: string;
   avatar: string;
@@ -18,6 +19,7 @@ export interface MomentumDay {
 }
 
 export const MOCK_USER: DashboardUser = {
+  firstName: 'Alex',
   name: 'Alex',
   email: 'alex@dayflow.app',
   avatar: '',

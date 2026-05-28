@@ -1,9 +1,9 @@
 <app-sidebar
-  [user]="user"
+  [user]="currentUser"
   [collapsed]="sidebarCollapsed()"
   [mobileOpen]="sidebarOpen()"
   (navigate)="handleNavigate($event)"
-  (toggleCollapse)="sidebarCollapsed.update(v => !v)"
+  (toggleCollapse)="sidebarCollapsed.update((v) => !v)"
   (newTask)="handleNewTask()"
   (logout)="handleLogout()"
 />
@@ -14,7 +14,7 @@
 
 <div class="layout-main">
   <app-topbar
-    [userName]="user.name"
+    [userName]="currentUser.firstName"
     [currentDate]="currentDate()"
     [sidebarOpen]="sidebarOpen()"
     (menuToggle)="toggleSidebar()"

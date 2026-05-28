@@ -3,14 +3,15 @@ import { RouterOutlet } from '@angular/router';
 import { AppSidebarComponent } from '../../components/dashboard/sidebar/sidebar';
 import { AppTopbarComponent } from '../../components/dashboard/topbar/topbar';
 import { TaskStore } from '../../core/stores/task.store';
-import { MOCK_USER } from '../../components/dashboard/dashboard.mock';
+import { AuthService } from '../../services/auth.service';
+import type { UserData } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-dashboard-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, AppSidebarComponent, AppTopbarComponent],
   host: {
-    'class': 'dashboard-layout',
+    class: 'dashboard-layout',
     '[class.sidebar-open]': 'sidebarOpen()',
     '[style.--sidebar-width.px]': 'sidebarWidth()',
   },
@@ -23,11 +24,11 @@ export class DashboardLayout {
   protected sidebarOpen = signal(false);
   protected sidebarCollapsed = signal(false);
 
-  protected sidebarWidth = computed(() =>
-    this.sidebarCollapsed() ? 68 : 240,
-  );
+  private _authService = inject(AuthService);
 
-  protected user = MOCK_USER;
+  protected sidebarWidth = computed(() => (this.sidebarCollapsed() ? 68 : 240));
+
+  protected currentUser = this._authService.currentUser() as UserData;
 
   protected currentDate = computed(() => {
     const now = new Date();
@@ -58,5 +59,7 @@ export class DashboardLayout {
   protected handleLogout(): void {
     // TODO: Implement logout via AuthService
     console.log('Logout requested');
+
+    this._authService.logout();
   }
 }

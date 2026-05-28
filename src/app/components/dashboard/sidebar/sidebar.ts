@@ -11,7 +11,7 @@ import {
   LucideUserCircle,
   LucideChevronLeft,
 } from '@lucide/angular';
-import type { DashboardUser } from '../dashboard.mock';
+import { UserData } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-sidebar',
@@ -30,7 +30,7 @@ import type { DashboardUser } from '../dashboard.mock';
     LucideChevronLeft,
   ],
   host: {
-    'class': 'app-sidebar',
+    class: 'app-sidebar',
     '[class.collapsed]': 'collapsed()',
     '[class.mobile-open]': 'mobileOpen()',
     '[attr.aria-label]': '"Main navigation"',
@@ -39,7 +39,7 @@ import type { DashboardUser } from '../dashboard.mock';
   styleUrl: './sidebar.scss',
 })
 export class AppSidebarComponent {
-  user = input.required<DashboardUser>();
+  user = input.required<UserData>();
   collapsed = input(false);
   mobileOpen = input(false);
 
