@@ -26,12 +26,29 @@ export class AuthService {
 
   private _currentUser = signal<UserData | null>(getStoredUser());
   private _token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
+  private _tokenExpiry = signal<number | null>(this.getStoredExpiry());
 
   private _router = inject(Router);
 
   readonly currentUser = computed(() => this._currentUser());
-  readonly isAuthenticated = computed(() => !!this._token());
-  readonly token = computed(() => this._token());
+  readonly isAuthenticated = computed(() => {
+    if (!this._token()) return false;
+    const expiry = this._tokenExpiry();
+    if (expiry && Date.now() >= expiry) {
+      this.logout();
+      return false;
+    }
+    return true;
+  });
+  readonly token = computed(() => {
+    if (!this.isAuthenticated()) return null;
+    return this._token();
+  });
+
+  private getStoredExpiry(): number | null {
+    const raw = localStorage.getItem('dayflow_token_expiry');
+    return raw ? Number(raw) : null;
+  }
 
   register(request: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/register`, request).pipe(
@@ -49,14 +66,19 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('dayflow_token_expiry');
     localStorage.removeItem(USER_KEY);
     this._token.set(null);
+    this._tokenExpiry.set(null);
     this._currentUser.set(null);
     this._router.navigate(['/login']);
   }
 
   private handleAuthResponse(response: AuthResponse): void {
+    const expiresAt = new Date(response.expiresAt).getTime();
+
     localStorage.setItem(TOKEN_KEY, response.token);
+    localStorage.setItem('dayflow_token_expiry', String(expiresAt));
     localStorage.setItem(
       USER_KEY,
       JSON.stringify({
@@ -66,6 +88,7 @@ export class AuthService {
       }),
     );
     this._token.set(response.token);
+    this._tokenExpiry.set(expiresAt);
 
     this._currentUser.set({
       name: response.name,
@@ -79,9 +102,9 @@ export class AuthService {
       const httpError = error as { error: ApiError; status: number };
       return {
         message:
+          this.statusMessage(httpError.status) ??
           httpError.error?.message ??
-          httpError.error?.title ??
-          this.statusMessage(httpError.status),
+          httpError.error?.title,
         status: httpError.status,
         errors: httpError.error?.errors,
       };
@@ -92,7 +115,7 @@ export class AuthService {
   private statusMessage(status: number): string {
     const messages: Record<number, string> = {
       401: 'Invalid email or password.',
-      409: 'An account with this email already exists.',
+      409: 'Please try with a different email address.',
       0: 'Could not connect to the server. Please check your connection.',
     };
     return messages[status] ?? `Request failed (${status}). Please try again later.`;

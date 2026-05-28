@@ -1,38 +1,31 @@
-import { Injectable } from '@angular/core';
-import type { Task, CreateTaskDto, UpdateTaskDto } from '../../../core/models/task.model';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../environments/environment.development';
+import type { TaskApiDto, CreateTaskApiDto, UpdateTaskApiDto } from '../../../core/models/api/task-api.model';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  // TODO: Integrate .NET Tasks API here
-  // Replace mock delay/response with HttpClient calls to the .NET backend
+  private http = inject(HttpClient);
+  private baseUrl = `${environment.apiUrl}/api/todo`;
 
-  async getTasks(): Promise<Task[]> {
-    // TODO: return firstValueFrom(this.http.get<Task[]>('/api/tasks'))
-    console.log('[TaskService] getTasks - stub');
-    return [];
+  getTasks(): Promise<TaskApiDto[]> {
+    return firstValueFrom(this.http.get<TaskApiDto[]>(this.baseUrl));
   }
 
-  async createTask(dto: CreateTaskDto): Promise<Task> {
-    // TODO: return firstValueFrom(this.http.post<Task>('/api/tasks', dto))
-    console.log('[TaskService] createTask - stub', dto);
-    throw new Error('API not implemented');
+  getTaskById(id: string): Promise<TaskApiDto> {
+    return firstValueFrom(this.http.get<TaskApiDto>(`${this.baseUrl}/${id}`));
   }
 
-  async updateTask(id: string, dto: UpdateTaskDto): Promise<Task> {
-    // TODO: return firstValueFrom(this.http.put<Task>(`/api/tasks/${id}`, dto))
-    console.log('[TaskService] updateTask - stub', id, dto);
-    throw new Error('API not implemented');
+  createTask(dto: CreateTaskApiDto): Promise<TaskApiDto> {
+    return firstValueFrom(this.http.post<TaskApiDto>(this.baseUrl, dto));
   }
 
-  async deleteTask(id: string): Promise<void> {
-    // TODO: return firstValueFrom(this.http.delete(`/api/tasks/${id}`))
-    console.log('[TaskService] deleteTask - stub', id);
-    throw new Error('API not implemented');
+  updateTask(id: string, dto: UpdateTaskApiDto): Promise<void> {
+    return firstValueFrom(this.http.put<void>(`${this.baseUrl}/${id}`, dto));
   }
 
-  async toggleTask(id: string, completed: boolean): Promise<Task> {
-    // TODO: return firstValueFrom(this.http.patch<Task>(`/api/tasks/${id}/toggle`, { completed }))
-    console.log('[TaskService] toggleTask - stub', id, completed);
-    throw new Error('API not implemented');
+  deleteTask(id: string): Promise<void> {
+    return firstValueFrom(this.http.delete<void>(`${this.baseUrl}/${id}`));
   }
 }

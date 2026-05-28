@@ -7,6 +7,10 @@
   </div>
 
   <div class="dialog-body">
+    @if (errorMessage()) {
+      <div class="dialog-error" role="alert">{{ errorMessage() }}</div>
+    }
+
     <app-task-form
       [title]="title()"
       [description]="description()"
@@ -14,6 +18,7 @@
       [status]="status()"
       [dueDate]="dueDate()"
       [saveLabel]="saveLabel"
+      [saving]="saving()"
       (titleChange)="title.set($event)"
       (descriptionChange)="description.set($event)"
       (priorityChange)="priority.set($event)"

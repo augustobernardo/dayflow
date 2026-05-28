@@ -1,3 +1,9 @@
+@if (loading()) {
+  <div class="dashboard-loading" role="status">
+    <span i18n="@@dashboard.loading">Loading tasks...</span>
+  </div>
+}
+
 <div class="dashboard-grid">
   <app-stats-card
     class="card-pos-stats"
@@ -19,14 +25,14 @@
   <app-calendar-widget
     class="card-pos-calendar"
     [title]="calendarTitle"
-    [days]="calendarDays"
-    [monthLabel]="calendarMonth"
+    [days]="calendarDays()"
+    [monthLabel]="calendarMonth()"
   />
 
   <app-streak-card
     class="card-pos-streak"
     [title]="streakTitle"
-    [streak]="streak"
+    [streak]="streak()"
     [daysLabel]="daysLabel"
   />
 
@@ -34,7 +40,7 @@
     class="card-pos-momentum"
     [title]="momentumTitle"
     [description]="momentumDescription"
-    [data]="momentum"
+    [data]="momentum()"
   />
 </div>
 

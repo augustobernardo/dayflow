@@ -6,12 +6,19 @@ import { StreakCardComponent } from '../../components/dashboard/streak-card/stre
 import { MomentumChartComponent } from '../../components/dashboard/momentum-chart/momentum-chart';
 import { TaskDialogComponent } from '../../features/tasks/components/task-dialog/task-dialog';
 import { TaskStore } from '../../core/stores/task.store';
-import {
-  MOCK_CALENDAR_DAYS,
-  MOCK_MOMENTUM,
-  MOCK_STREAK,
-  MOCK_CALENDAR_MONTH,
-} from '../../components/dashboard/dashboard.mock';
+
+export interface CalendarDay {
+  date: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+}
+
+export interface MomentumDay {
+  day: string;
+  dayShort: string;
+  value: number;
+  isToday: boolean;
+}
 
 @Component({
   selector: 'page-dashboard',
@@ -30,16 +37,109 @@ import {
 export class DashboardPage {
   private taskStore = inject(TaskStore);
 
-  protected readonly calendarDays = MOCK_CALENDAR_DAYS;
-  protected readonly momentum = MOCK_MOMENTUM;
-  protected readonly streak = MOCK_STREAK;
-  protected readonly calendarMonth = MOCK_CALENDAR_MONTH;
-
   protected tasksCompleted = this.taskStore.completedCount;
   protected totalTasks = this.taskStore.totalTasks;
   protected completionPct = this.taskStore.completionPercentage;
-
   protected dialogOpen = this.taskStore.dialogOpen;
+  protected loading = this.taskStore.loading;
+
+  protected readonly calendarDays = computed<CalendarDay[]>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startPad = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    const totalCells = Math.ceil((startPad + daysInMonth) / 7) * 7;
+
+    const tasks = this.taskStore.tasks();
+    const dueDates = new Set<number>();
+    for (const t of tasks) {
+      if (t.dueDate) {
+        const d = new Date(t.dueDate);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+          dueDates.add(d.getDate());
+        }
+      }
+    }
+
+    const days: CalendarDay[] = [];
+    for (let i = 0; i < totalCells; i++) {
+      const dayNum = i - startPad + 1;
+      const isCurrentMonth = dayNum >= 1 && dayNum <= daysInMonth;
+      days.push({
+        date: isCurrentMonth ? dayNum : (dayNum < 1 ? new Date(year, month, 0).getDate() + dayNum : dayNum - daysInMonth),
+        isCurrentMonth,
+        isToday: isCurrentMonth && dayNum === today,
+      });
+    }
+    return days;
+  });
+
+  protected readonly calendarMonth = computed(() => {
+    const now = new Date();
+    return now.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  });
+
+  protected readonly momentum = computed<MomentumDay[]>(() => {
+    const now = new Date();
+    const days: MomentumDay[] = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const tasks = this.taskStore.completedTasks();
+    const completedByDay = new Map<string, number>();
+
+    for (const t of tasks) {
+      if (!t.completedAt) continue;
+      const d = new Date(t.completedAt);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      completedByDay.set(key, (completedByDay.get(key) ?? 0) + 1);
+    }
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      const maxTasks = Math.max(...Array.from(completedByDay.values()), 1);
+      const value = Math.round(((completedByDay.get(key) ?? 0) / maxTasks) * 100);
+
+      days.push({
+        day: dayNames[d.getDay()],
+        dayShort: dayNames[d.getDay()][0],
+        value,
+        isToday: i === 0,
+      });
+    }
+    return days;
+  });
+
+  protected readonly streak = computed<number>(() => {
+    const tasks = this.taskStore.completedTasks();
+    const completionDates = new Set<string>();
+
+    for (const t of tasks) {
+      if (!t.completedAt) continue;
+      const d = new Date(t.completedAt);
+      completionDates.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+    }
+
+    let count = 0;
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      if (completionDates.has(key)) {
+        count++;
+      } else if (i > 0) {
+        break;
+      }
+    }
+    return count;
+  });
 
   protected readonly motivation = computed(() => {
     const pct = this.completionPct();

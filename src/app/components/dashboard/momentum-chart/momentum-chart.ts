@@ -1,5 +1,11 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
-import type { MomentumDay } from '../dashboard.mock';
+
+export interface MomentumDay {
+  day: string;
+  dayShort: string;
+  value: number;
+  isToday: boolean;
+}
 
 @Component({
   selector: 'app-momentum-chart',

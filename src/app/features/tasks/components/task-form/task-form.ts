@@ -17,6 +17,7 @@ export class TaskFormComponent {
   status = input<TaskStatus>('pending');
   dueDate = input<string>('');
   saveLabel = input<string>('Save');
+  saving = input(false);
 
   titleChange = output<string>();
   descriptionChange = output<string>();

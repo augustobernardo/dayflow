@@ -1,0 +1,53 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "model": "deepseek/deepseek-reasoner",
+
+  "small_model": "deepseek/deepseek-chat",
+
+  "agent": {
+    "planner": {
+      "mode": "primary",
+      "model": "deepseek/deepseek-reasoner",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+
+    "explore": {
+      "mode": "subagent",
+      "model": "deepseek/deepseek-chat",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+
+    "backend": {
+      "mode": "subagent",
+      "model": "deepseek/deepseek-reasoner"
+    },
+
+    "frontend": {
+      "mode": "subagent",
+      "model": "deepseek/deepseek-chat"
+    },
+
+    "tester": {
+      "mode": "subagent",
+      "model": "deepseek/deepseek-chat"
+    },
+
+    "reviewer": {
+      "mode": "subagent",
+      "model": "deepseek/deepseek-reasoner",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    }
+  }
+}

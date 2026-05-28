@@ -1,69 +1,16 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import type { Task, CreateTaskDto, UpdateTaskDto, TaskPriority, TaskStatus, TaskDialogMode } from '../models/task.model';
+import type { Task, CreateTaskDto, UpdateTaskDto, TaskStatus } from '../models/task.model';
 import { TaskService } from '../../features/tasks/services/task.service';
-
-function generateId(): string {
-  return crypto.randomUUID();
-}
-
-const MOCK_INITIAL_TASKS: Task[] = [
-  {
-    id: '1',
-    title: 'Design system audit',
-    description: 'Review typography, colors, and spacing across all components.',
-    priority: 'high',
-    status: 'pending',
-    dueDate: new Date('2026-05-21T16:00:00'),
-    createdAt: new Date('2026-05-20T09:00:00'),
-    updatedAt: new Date('2026-05-20T09:00:00'),
-  },
-  {
-    id: '2',
-    title: 'Update team documentation',
-    description: 'Refresh onboarding docs and API references.',
-    priority: 'medium',
-    status: 'pending',
-    dueDate: new Date('2026-05-22T11:00:00'),
-    createdAt: new Date('2026-05-19T14:00:00'),
-    updatedAt: new Date('2026-05-19T14:00:00'),
-  },
-  {
-    id: '3',
-    title: 'Review pull requests',
-    description: 'Audit open PRs for the dashboard feature branch.',
-    priority: 'high',
-    status: 'pending',
-    dueDate: new Date('2026-05-21T18:30:00'),
-    createdAt: new Date('2026-05-21T08:00:00'),
-    updatedAt: new Date('2026-05-21T08:00:00'),
-  },
-  {
-    id: '4',
-    title: 'Prepare sprint retrospective',
-    description: 'Gather metrics and feedback for the sprint review meeting.',
-    priority: 'low',
-    status: 'pending',
-    dueDate: new Date('2026-05-23T14:00:00'),
-    createdAt: new Date('2026-05-20T10:00:00'),
-    updatedAt: new Date('2026-05-20T10:00:00'),
-  },
-  {
-    id: '5',
-    title: 'Optimize database queries',
-    description: 'Profile slow queries and add missing indexes.',
-    priority: 'medium',
-    status: 'pending',
-    dueDate: new Date('2026-05-23T17:00:00'),
-    createdAt: new Date('2026-05-19T11:00:00'),
-    updatedAt: new Date('2026-05-19T11:00:00'),
-  },
-];
+import { taskApiToFrontend, createTaskFrontendToApi, updateTaskFrontendToApi } from '../mappers/task.mapper';
 
 @Injectable({ providedIn: 'root' })
 export class TaskStore {
   private taskService = inject(TaskService);
 
-  readonly tasks = signal<Task[]>(MOCK_INITIAL_TASKS);
+  readonly tasks = signal<Task[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  private initialized = false;
 
   readonly pendingTasks = computed(() =>
     this.tasks().filter((t) => t.status !== 'completed'),
@@ -84,7 +31,7 @@ export class TaskStore {
   });
 
   readonly dialogOpen = signal(false);
-  readonly dialogMode = signal<TaskDialogMode>('create');
+  readonly dialogMode = signal<'create' | 'edit'>('create');
   readonly dialogTask = signal<Task | null>(null);
 
   openCreateDialog(): void {
@@ -104,60 +51,68 @@ export class TaskStore {
     this.dialogTask.set(null);
   }
 
-  createTask(dto: CreateTaskDto): void {
-    const now = new Date();
-    const task: Task = {
-      id: generateId(),
-      title: dto.title,
-      description: dto.description,
-      priority: dto.priority,
-      status: dto.status,
-      dueDate: dto.dueDate,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    this.tasks.update((list) => [task, ...list]);
-
-    // TODO: Replace local state with API state synchronization
-    // this.taskService.createTask(dto).then(created => { ... })
+  async loadTasks(): Promise<void> {
+    if (this.initialized) return;
+    this.initialized = true;
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const dtos = await this.taskService.getTasks();
+      this.tasks.set(dtos.map(taskApiToFrontend));
+    } catch (err) {
+      this.error.set('Failed to load tasks.');
+      console.error('[TaskStore] loadTasks error:', err);
+    } finally {
+      this.loading.set(false);
+    }
   }
 
-  updateTask(id: string, dto: UpdateTaskDto): void {
-    this.tasks.update((list) =>
-      list.map((t) =>
-        t.id === id
-          ? { ...t, ...dto, updatedAt: new Date() }
-          : t,
-      ),
-    );
-
-    // TODO: Replace local state with API state synchronization
-    // this.taskService.updateTask(id, dto).then(updated => { ... })
+  async createTask(dto: CreateTaskDto): Promise<void> {
+    this.error.set(null);
+    try {
+      const apiDto = createTaskFrontendToApi(dto);
+      const created = await this.taskService.createTask(apiDto);
+      this.tasks.update((list) => [taskApiToFrontend(created), ...list]);
+    } catch (err) {
+      this.error.set('Failed to create task.');
+      console.error('[TaskStore] createTask error:', err);
+    }
   }
 
-  deleteTask(id: string): void {
-    this.tasks.update((list) => list.filter((t) => t.id !== id));
-
-    // TODO: Replace local state with API state synchronization
-    // this.taskService.deleteTask(id).then(() => { ... })
+  async updateTask(id: string, dto: UpdateTaskDto): Promise<void> {
+    this.error.set(null);
+    try {
+      const apiDto = updateTaskFrontendToApi(id, dto);
+      await this.taskService.updateTask(id, apiDto);
+      this.tasks.update((list) =>
+        list.map((t) =>
+          t.id === id
+            ? { ...t, ...dto, updatedAt: new Date() }
+            : t,
+        ),
+      );
+    } catch (err) {
+      this.error.set('Failed to update task.');
+      console.error('[TaskStore] updateTask error:', err);
+    }
   }
 
-  toggleTask(id: string): void {
-    this.tasks.update((list) =>
-      list.map((t) =>
-        t.id === id
-          ? {
-              ...t,
-              status: (t.status === 'completed' ? 'pending' : 'completed') as TaskStatus,
-              updatedAt: new Date(),
-            }
-          : t,
-      ),
-    );
+  async deleteTask(id: string): Promise<void> {
+    this.error.set(null);
+    try {
+      await this.taskService.deleteTask(id);
+      this.tasks.update((list) => list.filter((t) => t.id !== id));
+    } catch (err) {
+      this.error.set('Failed to delete task.');
+      console.error('[TaskStore] deleteTask error:', err);
+    }
+  }
 
-    // TODO: Replace local state with API state synchronization
-    // const task = this.tasks().find(t => t.id === id);
-    // if (task) this.taskService.toggleTask(id, task.status === 'completed').then(...)
+  async toggleTask(id: string): Promise<void> {
+    const task = this.tasks().find((t) => t.id === id);
+    if (!task) return;
+
+    const newStatus: TaskStatus = task.status === 'completed' ? 'pending' : 'completed';
+    await this.updateTask(id, { status: newStatus });
   }
 }

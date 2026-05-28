@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, afterNextRender, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, afterNextRender, effect } from '@angular/core';
 import { LucideX } from '@lucide/angular';
 import { TaskFormComponent } from '../task-form/task-form';
 import { TaskStore } from '../../../../core/stores/task.store';
@@ -63,33 +63,42 @@ export class TaskDialogComponent {
     this.taskStore.closeDialog();
   }
 
-  protected onSave(): void {
+  protected saving = signal(false);
+  protected errorMessage = computed(() => this.taskStore.error());
+
+  protected async onSave(): Promise<void> {
     const mode = this.taskStore.dialogMode();
     const existing = this.taskStore.dialogTask();
 
-    if (mode === 'create') {
-      const dto: CreateTaskDto = {
-        title: this.title().trim(),
-        description: this.description().trim(),
-        priority: this.priority(),
-        status: this.status(),
-        dueDate: this.dueDate() ? new Date(this.dueDate()) : null,
-      };
-      if (!dto.title) return;
-      this.taskStore.createTask(dto);
-    } else if (mode === 'edit' && existing) {
-      const dto: UpdateTaskDto = {
-        title: this.title().trim(),
-        description: this.description().trim(),
-        priority: this.priority(),
-        status: this.status(),
-        dueDate: this.dueDate() ? new Date(this.dueDate()) : null,
-      };
-      if (!dto.title) return;
-      this.taskStore.updateTask(existing.id, dto);
+    this.saving.set(true);
+    try {
+      if (mode === 'create') {
+        const dto: CreateTaskDto = {
+          title: this.title().trim(),
+          description: this.description().trim(),
+          priority: this.priority(),
+          status: this.status(),
+          dueDate: this.dueDate() ? new Date(this.dueDate()) : null,
+        };
+        if (!dto.title) return;
+        await this.taskStore.createTask(dto);
+      } else if (mode === 'edit' && existing) {
+        const dto: UpdateTaskDto = {
+          title: this.title().trim(),
+          description: this.description().trim(),
+          priority: this.priority(),
+          status: this.status(),
+          dueDate: this.dueDate() ? new Date(this.dueDate()) : null,
+        };
+        if (!dto.title) return;
+        await this.taskStore.updateTask(existing.id, dto);
+      }
+      this.close();
+    } catch {
+      // error handled by store
+    } finally {
+      this.saving.set(false);
     }
-
-    this.close();
   }
 
   protected get saveLabel(): string {

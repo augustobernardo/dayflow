@@ -83,6 +83,18 @@
   padding: 1.5rem;
 }
 
+.dialog-error {
+  font-size: var(--text-sm);
+  color: var(--color-error-500);
+  background: rgb(239 68 68 / 0.08);
+  border: 1px solid rgb(239 68 68 / 0.2);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
 @media (max-width: 480px) {
   .dialog-panel {
     max-width: 100%;

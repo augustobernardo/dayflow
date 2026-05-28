@@ -39,6 +39,10 @@ export class DashboardLayout {
     });
   });
 
+  constructor() {
+    this.taskStore.loadTasks();
+  }
+
   protected toggleSidebar(): void {
     this.sidebarOpen.update((v) => !v);
   }

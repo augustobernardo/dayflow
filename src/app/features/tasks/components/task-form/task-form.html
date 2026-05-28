@@ -68,8 +68,13 @@
 
   <div class="form-actions">
     <button type="button" class="btn-cancel" (click)="cancel.emit()" i18n="@@common.cancel">Cancel</button>
-    <button type="submit" class="btn-save" [disabled]="!title().trim()">
-      {{ saveLabel() }}
+    <button type="submit" class="btn-save" [disabled]="!title().trim() || saving()">
+      @if (saving()) {
+        <span class="btn-spinner" aria-hidden="true"></span>
+        <span i18n="@@common.saving">Saving...</span>
+      } @else {
+        {{ saveLabel() }}
+      }
     </button>
   </div>
 </form>

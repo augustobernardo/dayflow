@@ -1,6 +1,11 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { LucideCalendar } from '@lucide/angular';
-import type { CalendarDay } from '../dashboard.mock';
+
+export interface CalendarDay {
+  date: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+}
 
 @Component({
   selector: 'app-calendar-widget',

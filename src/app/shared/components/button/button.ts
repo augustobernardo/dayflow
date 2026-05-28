@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, booleanAttribute } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, booleanAttribute, inject, ElementRef } from '@angular/core';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -114,6 +114,8 @@ export class ButtonComponent {
 
   clicked = output<Event>();
 
+  private elementRef = inject(ElementRef<HTMLElement>);
+
   protected hostClasses(): string {
     const classes = [
       `btn-${this.variant()}`,
@@ -132,5 +134,11 @@ export class ButtonComponent {
       return;
     }
     this.clicked.emit(event);
+
+    if (this.type() === 'submit') {
+      this.elementRef.nativeElement
+        .closest('form')
+        ?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    }
   }
 }
