@@ -1,0 +1,25 @@
+<div class="task-check" (click)="toggle()" (keydown.enter)="toggle()" (keydown.space)="onSpace($event)" role="checkbox" [attr.aria-checked]="isCompleted()" tabindex="0">
+  @if (isCompleted()) {
+    <svg lucideCheck [size]="16" class="check-icon"></svg>
+  } @else {
+    <svg lucideCircle [size]="16" class="circle-icon"></svg>
+  }
+</div>
+
+<div class="task-content" (click)="toggle()">
+  <span class="task-title" [class.line-through]="isCompleted()">{{ title() }}</span>
+  <span class="task-meta">
+    {{ dueDate() }} &middot; {{ dueTime() }}
+  </span>
+</div>
+
+<app-priority-badge [priority]="priority()" />
+
+<div class="task-actions">
+  <button class="action-btn edit-btn" (click)="editTask.emit()" [attr.aria-label]="'Edit task'">
+    <svg lucidePencil [size]="14"></svg>
+  </button>
+  <button class="action-btn delete-btn" (click)="deleteTask.emit()" [attr.aria-label]="'Delete task'">
+    <svg lucideTrash2 [size]="14"></svg>
+  </button>
+</div>

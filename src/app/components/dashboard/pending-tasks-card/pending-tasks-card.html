@@ -1,0 +1,22 @@
+<div class="card-header">
+  <h3 class="card-title">{{ title() }}</h3>
+  <!-- TODO: Link to full tasks page -->
+  <button class="view-all-btn">{{ viewAllLabel() }}</button>
+</div>
+
+<div class="tasks-list">
+  @for (task of tasks(); track task.id) {
+    <app-task-item
+      [title]="task.title"
+      [dueDate]="formatDueDate(task.dueDate)"
+      [dueTime]="formatDueTime(task.dueDate)"
+      [priority]="task.priority"
+      [completed]="task.status === 'completed'"
+      (toggleTask)="onToggle(task.id)"
+      (editTask)="onEdit(task.id)"
+      (deleteTask)="onDelete(task.id)"
+    />
+  } @empty {
+    <p class="empty-state" i18n="@@dashboard.noTasks">No pending tasks. Enjoy your day!</p>
+  }
+</div>

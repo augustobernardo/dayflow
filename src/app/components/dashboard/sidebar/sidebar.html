@@ -1,0 +1,104 @@
+<div class="sidebar-inner">
+  <div class="sidebar-top">
+    <button class="collapse-btn" (click)="toggleCollapse.emit()" [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
+      <svg lucideChevronLeft [size]="18"></svg>
+    </button>
+
+    <div class="logo-area">
+      <div class="logo-mark">
+        <span class="logo-letter">D</span>
+      </div>
+      @if (!collapsed()) {
+        <span class="logo-text">{{ appName }}</span>
+      }
+    </div>
+
+    <nav class="nav-section" role="navigation" aria-label="Main navigation">
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-item"
+        aria-current="page"
+      >
+        <svg lucideLayoutDashboard [size]="20"></svg>
+        @if (!collapsed()) {
+          <span class="nav-label" i18n="@@sidebar.dashboard">Dashboard</span>
+        }
+      </a>
+
+      <a
+        routerLink="/dashboard/tasks"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <svg lucideCheckCheck [size]="20"></svg>
+        @if (!collapsed()) {
+          <span class="nav-label" i18n="@@sidebar.tasks">Tasks</span>
+        }
+      </a>
+
+      <a
+        routerLink="/dashboard/categories"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <svg lucideFolderKanban [size]="20"></svg>
+        @if (!collapsed()) {
+          <span class="nav-label" i18n="@@sidebar.categories">Categories</span>
+        }
+      </a>
+
+      <a
+        routerLink="/dashboard/settings"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <svg lucideSettings [size]="20"></svg>
+        @if (!collapsed()) {
+          <span class="nav-label" i18n="@@sidebar.settings">Settings</span>
+        }
+      </a>
+    </nav>
+
+    <button class="new-task-btn" (click)="newTask.emit()" [attr.aria-label]="'Create new task'">
+      <svg lucidePlus [size]="18"></svg>
+      @if (!collapsed()) {
+        <span i18n="@@sidebar.newTask">New Task</span>
+      }
+    </button>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-area">
+      @if (user().avatar) {
+        <img [src]="user().avatar" alt="" class="user-avatar" />
+      } @else {
+        <div class="user-avatar-placeholder">
+          <svg lucideUserCircle [size]="22"></svg>
+        </div>
+      }
+      @if (!collapsed()) {
+        <div class="user-info">
+          <span class="user-name">{{ user().firstName }}</span>
+          <span class="user-email">{{ user().email }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="utility-links">
+      <button class="utility-link" (click)="navigate.emit('help')">
+        <svg lucideHelpCircle [size]="18"></svg>
+        @if (!collapsed()) {
+          <span i18n="@@sidebar.help">Help</span>
+        }
+      </button>
+      <button class="utility-link logout-link" (click)="logout.emit()">
+        <svg lucideLogOut [size]="18"></svg>
+        @if (!collapsed()) {
+          <span i18n="@@sidebar.logout">Logout</span>
+        }
+      </button>
+    </div>
+  </div>
+</div>

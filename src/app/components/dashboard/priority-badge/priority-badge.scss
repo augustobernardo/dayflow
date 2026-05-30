@@ -1,0 +1,53 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 1.4;
+  transition: background-color 0.2s ease;
+}
+
+.badge-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.priority-high {
+  background-color: var(--color-error-50);
+  color: var(--color-error-700);
+  .badge-dot { background-color: var(--color-error-500); }
+}
+
+.priority-medium {
+  background-color: var(--color-warning-50);
+  color: var(--color-warning-700);
+  .badge-dot { background-color: var(--color-warning-500); }
+}
+
+.priority-low {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  .badge-dot { background-color: var(--color-primary-500); }
+}
+
+.dark {
+  .priority-high {
+    background-color: rgb(239 68 68 / 0.15);
+    color: #fca5a5;
+  }
+  .priority-medium {
+    background-color: rgb(245 158 11 / 0.15);
+    color: #fcd34d;
+  }
+  .priority-low {
+    background-color: rgb(16 185 129 / 0.15);
+    color: #6ee7b7;
+  }
+}

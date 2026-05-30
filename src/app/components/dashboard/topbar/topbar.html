@@ -1,0 +1,30 @@
+<div class="topbar-inner">
+  <button
+    class="menu-toggle-btn"
+    (click)="menuToggle.emit()"
+    [attr.aria-label]="sidebarOpen() ? 'Close menu' : 'Open menu'"
+    [attr.aria-expanded]="sidebarOpen()"
+  >
+    @if (sidebarOpen()) {
+      <svg lucideX [size]="22"></svg>
+    } @else {
+      <svg lucideMenu [size]="22"></svg>
+    }
+  </button>
+
+  <div class="topbar-content">
+    <div class="greeting-section">
+      <h1 class="greeting-text">{{ greeting }}</h1>
+      <p class="greeting-subtitle">{{ subtitleText }}</p>
+    </div>
+
+    <div class="topbar-actions">
+      <span class="date-display">{{ currentDate() }}</span>
+
+      <button class="notif-btn" [attr.aria-label]="'Notifications'">
+        <svg lucideBell [size]="20"></svg>
+        <span class="notif-dot" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</div>

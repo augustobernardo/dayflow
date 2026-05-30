@@ -19,7 +19,7 @@ import { TranslationService } from '../../../core/i18n';
           </p>
         </div>
 
-        <form class="auth-form" (submit)="onSubmit($event)" novalidate>
+        <form class="auth-form" (submit)="onSubmit($event)" (keydown.enter)="onSubmit($event)" novalidate>
           <app-input
             [label]="emailLabel"
             type="email"
@@ -49,11 +49,10 @@ import { TranslationService } from '../../../core/i18n';
           <div class="success-icon-wrapper">
             <span class="material-symbols-outlined success-icon">mail</span>
           </div>
-          <h2 class="auth-title" i18n="@@auth.forgotPassword.success.title">Check your email</h2>
-          <p class="auth-description success-description">{{ successMessage() }}</p>
+          <h2 class="auth-title" i18n="@@auth.forgotPassword.comingSoon.title">Coming Soon</h2>
+          <p class="auth-description success-description">{{ comingSoonMessage }}</p>
           <div class="success-actions">
             <a routerLink="/auth/login" class="auth-link" i18n="@@auth.forgotPassword.backToLogin">Back to Sign In</a>
-            <button class="auth-link-resend" (click)="resend()" i18n="@@auth.forgotPassword.success.resendLink">Send again</button>
           </div>
         </div>
       }
@@ -98,19 +97,15 @@ export class ForgotPasswordPage {
     });
   }
 
+  protected readonly comingSoonMessage = $localize`:@@auth.forgotPassword.comingSoon:Password reset is not available yet. Please contact support for assistance.`;
+
   onSubmit(event: Event): void {
     event.preventDefault();
-    this.submitting.set(true);
-    // TODO: Integrate password reset API here
-    setTimeout(() => {
-      this.submitting.set(false);
-      this.sent.set(true);
-    }, 1500);
+    this.submitting.set(false);
+    this.sent.set(true);
   }
 
   resend(): void {
-    this.submitting.set(true);
-    // TODO: Integrate password reset API here
-    setTimeout(() => this.submitting.set(false), 1500);
+    // not implemented
   }
 }

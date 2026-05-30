@@ -1,0 +1,25 @@
+<div class="card-header">
+  <span class="card-title">{{ title() }}</span>
+</div>
+
+<div class="card-value">
+  @if (totalValue() !== undefined && totalValue() !== null) {
+    <span class="value-large">{{ value() }}</span>
+    <span class="value-separator">/</span>
+    <span class="value-total">{{ totalValue() }}</span>
+  } @else {
+    <span class="value-large">{{ value() }}</span>
+  }
+</div>
+
+<div class="card-subtitle">{{ subtitle() }}</div>
+
+@if (showProgress() && totalValue() !== undefined && totalValue() !== null) {
+  <div class="progress-track" role="progressbar" [attr.aria-valuenow]="value()" [attr.aria-valuemax]="totalValue()" [attr.aria-label]="title()">
+    <div class="progress-fill" [style.width.%]="percentage()"></div>
+  </div>
+}
+
+@if (motivation()) {
+  <p class="motivation-text">{{ motivation() }}</p>
+}

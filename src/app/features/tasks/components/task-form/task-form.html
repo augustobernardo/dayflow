@@ -1,0 +1,80 @@
+<form class="task-form-content" (submit)="save.emit(); $event.preventDefault()" novalidate>
+  <div class="form-group">
+    <label for="task-title" class="form-label" i18n="@@task.form.title">Title</label>
+    <input
+      id="task-title"
+      type="text"
+      class="form-input"
+      [value]="title()"
+      (input)="titleChange.emit($any($event.target).value)"
+      placeholder="Enter task title"
+      required
+      autofocus
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="task-desc" class="form-label" i18n="@@task.form.description">Description</label>
+    <textarea
+      id="task-desc"
+      class="form-input form-textarea"
+      [value]="description()"
+      (input)="descriptionChange.emit($any($event.target).value)"
+      placeholder="Add a description (optional)"
+      rows="3"
+    ></textarea>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="task-priority" class="form-label" i18n="@@task.form.priority">Priority</label>
+      <select
+        id="task-priority"
+        class="form-input form-select"
+        [value]="priority()"
+        (change)="priorityChange.emit($any($event.target).value)"
+      >
+        <option value="low" i18n="@@priority.low">Low</option>
+        <option value="medium" i18n="@@priority.medium">Medium</option>
+        <option value="high" i18n="@@priority.high">High</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="task-status" class="form-label" i18n="@@task.form.status">Status</label>
+      <select
+        id="task-status"
+        class="form-input form-select"
+        [value]="status()"
+        (change)="statusChange.emit($any($event.target).value)"
+      >
+        <option value="pending" i18n="@@task.status.pending">Pending</option>
+        <option value="in-progress" i18n="@@task.status.inProgress">In Progress</option>
+        <option value="completed" i18n="@@task.status.completed">Completed</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="task-due" class="form-label" i18n="@@task.form.dueDate">Due Date</label>
+    <input
+      id="task-due"
+      type="datetime-local"
+      class="form-input"
+      [value]="dueDate()"
+      (input)="dueDateChange.emit($any($event.target).value)"
+    />
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn-cancel" (click)="cancel.emit()" i18n="@@common.cancel">Cancel</button>
+    <button type="submit" class="btn-save" [disabled]="!title().trim() || saving()">
+      @if (saving()) {
+        <span class="btn-spinner" aria-hidden="true"></span>
+        <span i18n="@@common.saving">Saving...</span>
+      } @else {
+        {{ saveLabel() }}
+      }
+    </button>
+  </div>
+</form>

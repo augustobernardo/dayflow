@@ -1,0 +1,26 @@
+<app-sidebar
+  [user]="currentUser"
+  [collapsed]="sidebarCollapsed()"
+  [mobileOpen]="sidebarOpen()"
+  (navigate)="handleNavigate($event)"
+  (toggleCollapse)="sidebarCollapsed.update((v) => !v)"
+  (newTask)="handleNewTask()"
+  (logout)="handleLogout()"
+/>
+
+@if (sidebarOpen()) {
+  <div class="sidebar-overlay" (click)="closeSidebar()" aria-hidden="true"></div>
+}
+
+<div class="layout-main">
+  <app-topbar
+    [userName]="currentUser.firstName"
+    [currentDate]="currentDate()"
+    [sidebarOpen]="sidebarOpen()"
+    (menuToggle)="toggleSidebar()"
+  />
+
+  <main class="layout-content">
+    <router-outlet />
+  </main>
+</div>

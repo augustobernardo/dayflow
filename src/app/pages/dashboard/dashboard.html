@@ -1,0 +1,49 @@
+@if (loading()) {
+  <div class="dashboard-loading" role="status">
+    <span i18n="@@dashboard.loading">Loading tasks...</span>
+  </div>
+}
+
+<div class="dashboard-grid">
+  <app-stats-card
+    class="card-pos-stats"
+    [title]="statsTitle"
+    [value]="tasksCompleted()"
+    [totalValue]="totalTasks()"
+    [subtitle]="completionPct() + '% ' + dailyGoal"
+    [accentColor]="'var(--color-primary-500)'"
+    [showProgress]="true"
+    [motivation]="motivation()"
+  />
+
+  <app-pending-tasks-card
+    class="card-pos-pending"
+    [title]="pendingTitle"
+    [viewAllLabel]="viewAllLabel"
+  />
+
+  <app-calendar-widget
+    class="card-pos-calendar"
+    [title]="calendarTitle"
+    [days]="calendarDays()"
+    [monthLabel]="calendarMonth()"
+  />
+
+  <app-streak-card
+    class="card-pos-streak"
+    [title]="streakTitle"
+    [streak]="streak()"
+    [daysLabel]="daysLabel"
+  />
+
+  <app-momentum-chart
+    class="card-pos-momentum"
+    [title]="momentumTitle"
+    [description]="momentumDescription"
+    [data]="momentum()"
+  />
+</div>
+
+@if (dialogOpen()) {
+  <app-task-dialog />
+}

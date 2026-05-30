@@ -1,0 +1,30 @@
+<div class="calendar-header">
+  <div class="calendar-title-row">
+    <svg lucideCalendar [size]="16" class="calendar-icon"></svg>
+    <h3 class="calendar-title">{{ title() }}</h3>
+  </div>
+  <span class="calendar-month">{{ monthLabel() }}</span>
+</div>
+
+<div class="weekday-labels">
+  <span class="weekday" i18n="@@dashboard.calendar.sun">S</span>
+  <span class="weekday" i18n="@@dashboard.calendar.mon">M</span>
+  <span class="weekday" i18n="@@dashboard.calendar.tue">T</span>
+  <span class="weekday" i18n="@@dashboard.calendar.wed">W</span>
+  <span class="weekday" i18n="@@dashboard.calendar.thu">T</span>
+  <span class="weekday" i18n="@@dashboard.calendar.fri">F</span>
+  <span class="weekday" i18n="@@dashboard.calendar.sat">S</span>
+</div>
+
+<div class="calendar-grid">
+  @for (day of days(); track $index) {
+    <div
+      class="day-cell"
+      [class.other-month]="!day.isCurrentMonth"
+      [class.today]="day.isToday"
+      [attr.aria-label]="day.isToday ? 'Today' : ''"
+    >
+      <span class="day-number">{{ day.date }}</span>
+    </div>
+  }
+</div>

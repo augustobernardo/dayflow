@@ -31,11 +31,35 @@
       "skillPath": "skills/angular-signals/SKILL.md",
       "computedHash": "3c81e0d5622c38ba42699895c50b3363130f2c2c6f74faf3402302e40f6ccbb9"
     },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
       "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "security-audit": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/security-audit/SKILL.md",
+      "computedHash": "d2939884d0b0631675555fc02cf86283d749b56d02d1378e7a7bf99312bad262"
+    },
+    "security-prompts": {
+      "source": "harperaa/secure-claude-skills",
+      "sourceType": "github",
+      "skillPath": "security-prompts/SKILL.md",
+      "computedHash": "bfc18abd8ea635ec66880d044fe51e98173f5fa1ed4d9c452ddbb6726d9a3986"
+    },
+    "websocket": {
+      "source": "martinholovsky/claude-skills-generator",
+      "sourceType": "github",
+      "skillPath": "skills/websocket/SKILL.md",
+      "computedHash": "95b114a48e8de6379506359866eb08cd40bc3fcda529de5c62cfc65f7e8e6466"
     }
   }
 }
